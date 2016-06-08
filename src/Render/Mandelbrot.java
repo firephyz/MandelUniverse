@@ -99,7 +99,6 @@ public class Mandelbrot extends JFrame{
 		
 		// Configure drawing area
 		this.canvas = new DrawingCanvas();
-		//canvas.setBackground(new Color(1, 1, 1, 1));
 		canvas.setOpaque(true);
 		canvas.setVisible(true);
 		
