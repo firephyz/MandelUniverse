@@ -1,26 +1,49 @@
 package Render;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 
 public class Mandelbrot extends JFrame{
 	
-	private final int WIDTH = 500;
-	private final int HEIGHT = 500;
+	public static final int WIDTH = 500;
+	public static final int HEIGHT = 500;
 	private boolean isFullscreen = false;
+	private JPanel canvas;
 	
 	public Mandelbrot() {
 		
 		setupWindow();
+		
+		Timer tmr = new Timer();
+		tmr.schedule(new MyTask(this.canvas), 1, 30);
+	}
+	
+	private class MyTask extends TimerTask {
+		
+		private JPanel canvas;
+		
+		public MyTask(JPanel canvas) {
+			this.canvas = canvas;
+		}
+
+		@Override
+		public void run() {
+			canvas.repaint();
+		}
 	}
 	
 	private void setupWindow() {
@@ -41,7 +64,13 @@ public class Mandelbrot extends JFrame{
 		}
 		
 		// Configure the menu bar
-		GridLayout menuLayout = new GridLayout(0, 7);
+		GridLayout menuLayout;
+		if (this.isFullscreen) {
+			menuLayout = new GridLayout(0, 20);
+		}
+		else {
+			menuLayout = new GridLayout(0, 7);
+		}
 		menuLayout.setHgap(3);
 		menuLayout.setVgap(3);
 		JMenuBar menu = new JMenuBar();
@@ -51,6 +80,7 @@ public class Mandelbrot extends JFrame{
 		// Configure file menu
 		JMenu fileMenu = new JMenu();
 		fileMenu.setBorderPainted(true);
+		fileMenu.setBorder(new BevelBorder(0));
 		fileMenu.setText("Menu");
 		JMenuItem closeItem = new JMenuItem();
 		closeItem.setText("Close");
@@ -68,8 +98,10 @@ public class Mandelbrot extends JFrame{
 		menu.setVisible(true);
 		
 		// Configure drawing area
-		DrawingCanvas canvas = new DrawingCanvas();
-		canvas.setBackground(new Color(0, 0, 0));
+		this.canvas = new DrawingCanvas();
+		//canvas.setBackground(new Color(1, 1, 1, 1));
+		canvas.setOpaque(true);
+		canvas.setVisible(true);
 		
 		// Finalize and present
 		this.setJMenuBar(menu);
