@@ -1,65 +1,116 @@
 package Render;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.FileNotFoundException;
 
 import javax.swing.JPanel;
 
 public class FractalRenderer implements Runnable {
 	
 	// Canvas info
-	private JPanel canvas;
+	private MandelPanel canvas;
 	BufferedImage image;
+	ImageSaver saver;
 	private int WIDTH, HEIGHT;
 	
 	// Virtual window info
 	private double zoomLevel;
 	private double xPos, yPos; // Position of the window in the complex plane
-	private double width, height;
+	private double width, height; // Viewing dimensions of the window in the complex plane
 	
 	// Fractal info
 	private int MAX_ITER;
 	
-	public FractalRenderer(JPanel canvas) {
-		this.canvas = canvas;
-		this.image = new BufferedImage(canvas.getWidth(), 
-				   					   canvas.getHeight(), 
+	// Progress info
+	private int currentImageNum;
+	private int numberToRender;
+	
+	public FractalRenderer(MandelPanel drawingPanel) {
+		this.canvas = drawingPanel;
+		this.saver = new ImageSaver();
+		drawingPanel.updateSaver(saver);
+		this.image = new BufferedImage(drawingPanel.getWidth(), 
+				   					   drawingPanel.getHeight(), 
 				   					   BufferedImage.TYPE_INT_RGB);
-		this.WIDTH = canvas.getWidth();
-		this.HEIGHT = canvas.getHeight();
+		this.WIDTH = drawingPanel.getWidth();
+		this.HEIGHT = drawingPanel.getHeight();
 		
-		this.zoomLevel = 2;
-		double correctionRatio = (double)HEIGHT / WIDTH;
-		this.width = 4.0 / zoomLevel;
-		this.height = 4.0 / zoomLevel * correctionRatio;
-		this.xPos = -1.0;
-		this.yPos = 0.0;
+		this.setZoomLevel(1.0);
+		this.xPos = -0.73879999557041615;
+		this.yPos = 0.2102096483249081;
 		
 		this.MAX_ITER = 200;
 	}
 	
+	public void setZoomLevel(double zoom) {
+		this.zoomLevel = zoom;
+		double correctionRatio = (double)HEIGHT / WIDTH;
+		this.width = 4.0 / zoomLevel;
+		this.height = 4.0 / zoomLevel * correctionRatio;
+	}
+	
 	@Override
 	public void run() {
+		this.numberToRender = 500;
+		canvas.setNumberToRender(numberToRender);
+		renderFractal();
+		canvas.setReadyToDisplay(true);
+	}
+	
+	private void renderFractal() {
 		
 		Graphics2D g = image.createGraphics();
 		
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		
-		for(int y = 0; y < HEIGHT; ++y) {
-			for (int x = 0; x < WIDTH; ++x) {
-				
-				// Perform calculation
-				int count = iterate(x, y);
-				
-				// Color that pixel
-				colorPixel(g, x, y, count);
+		try {
+			saver.clearImages();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		for(currentImageNum = 0; currentImageNum < numberToRender; ++currentImageNum) {
+			adjustIterLimit(currentImageNum);
+			
+			for(int y = 0; y < HEIGHT; ++y) {
+				for (int x = 0; x < WIDTH; ++x) {
+					
+					// Perform calculation
+					int count = iterate(x, y);
+					
+					// Color that pixel
+					colorPixel(g, x, y, count);
+				}
 			}
+			
+			saver.saveImage(image);
+			
+			this.setZoomLevel(zoomLevel * 1.05);
+		}
+	}
+	
+	private void adjustIterLimit(int i) {
+		
+		if (i == 0) {
+			this.MAX_ITER = 200;
+		}
+		else if (i == 130) {
+			this.MAX_ITER = 350;
+		}
+		else if (i == 210) {
+			this.MAX_ITER = 500;
+		}
+		else if (i == 300) {
+			this.MAX_ITER = 700;
+		}
+		else if (i == 400) {
+			this.MAX_ITER = 850;
+		}
+		else if (i == 460) {
+			this.MAX_ITER = 1000;
 		}
 	}
 	
@@ -160,4 +211,5 @@ public class FractalRenderer implements Runnable {
 	}
 	
 	public BufferedImage getImage() {return this.image;}
+	public double getProgress() {return (double)currentImageNum / numberToRender;}
 }

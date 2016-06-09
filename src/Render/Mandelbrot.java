@@ -1,25 +1,23 @@
 package Render;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.Timer;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
+import Render.CanvasUpdateTask;
 
 public class Mandelbrot extends JFrame{
 	
-	public final int WIDTH = 1200;
-	public final int HEIGHT = 680;
+	public final int WIDTH = 500;
+	public final int HEIGHT = 500;
 	private boolean isFullscreen = false;
 	private final int FRAMERATE = 20;
 	
@@ -33,7 +31,7 @@ public class Mandelbrot extends JFrame{
 		
 		// Create the fractal renderer
 		renderer = new FractalRenderer(drawingPanel);
-		drawingPanel.setImage(renderer.getImage());
+		drawingPanel.setRenderer(renderer);
 		(new Thread(renderer)).start();
 		
 		// Create screen updater
