@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 
 import javax.swing.JPanel;
 
-public class MandelMaker implements Runnable {
+public class FractalRenderer implements Runnable {
 	
 	// Canvas info
 	private JPanel canvas;
@@ -25,32 +25,22 @@ public class MandelMaker implements Runnable {
 	// Fractal info
 	private int MAX_ITER;
 	
-//	g.setColor(Color.WHITE);
-//	g.drawOval(getPointPos(0, GET_X) - getLineLength(2) / 2, 
-//			   getPointPos(0, GET_Y) - getLineLength(2) / 2, 
-//			   getLineLength(2), 
-//			   getLineLength(2));
-//	adjustZoom(zoomLevel - 0.01);
-	
-	public MandelMaker(JPanel canvas) {
+	public FractalRenderer(JPanel canvas) {
 		this.canvas = canvas;
+		this.image = new BufferedImage(canvas.getWidth(), 
+				   					   canvas.getHeight(), 
+				   					   BufferedImage.TYPE_INT_RGB);
 		this.WIDTH = canvas.getWidth();
 		this.HEIGHT = canvas.getHeight();
-		this.image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 		
-		double correctionRatio = (double)HEIGHT / WIDTH;
 		this.zoomLevel = 2;
+		double correctionRatio = (double)HEIGHT / WIDTH;
 		this.width = 4.0 / zoomLevel;
 		this.height = 4.0 / zoomLevel * correctionRatio;
 		this.xPos = -1.0;
 		this.yPos = 0.0;
 		
 		this.MAX_ITER = 200;
-	}
-	
-	public void render() {
-		
-		this.run();
 	}
 	
 	@Override
@@ -80,7 +70,7 @@ public class MandelMaker implements Runnable {
 		int count = 0;
 		
 		for(count = 0; count < MAX_ITER; ++count) {
-			movingX = calculatePoint(movingX, 
+			double newX = calculatePoint(movingX, 
 									 movingY, 
 									 getPixelPos(x, GET_X), 
 									 getPixelPos(y, GET_Y),
@@ -90,6 +80,7 @@ public class MandelMaker implements Runnable {
 					  				 getPixelPos(x, GET_X), 
 					  				 getPixelPos(y, GET_Y),
 					  				 GET_Y);
+			movingX = newX;
 			
 			// If it escapes, break
 			if (distance(movingX, movingY) >= 2) {
@@ -131,14 +122,8 @@ public class MandelMaker implements Runnable {
 			return 2 * movingX * movingY + y;
 		}
 		
+		// Unreachable case if the function is called correctly
 		return 0.0;
-	}
-	
-	private void adjustZoom(double newZoom) {
-		this.zoomLevel = newZoom;
-		double correctionRatio = (double)HEIGHT / WIDTH;
-		this.width = 2.0 / zoomLevel;
-		this.height = 2.0 / zoomLevel * correctionRatio;
 	}
 	
 	private int getLineLength(double length) {

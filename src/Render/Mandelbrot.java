@@ -18,27 +18,28 @@ import javax.swing.border.EtchedBorder;
 
 public class Mandelbrot extends JFrame{
 	
-	public final int WIDTH = 500;
-	public final int HEIGHT = 500;
+	public final int WIDTH = 1200;
+	public final int HEIGHT = 680;
 	private boolean isFullscreen = false;
 	private final int FRAMERATE = 20;
 	
-	private DrawingCanvas canvas;
-	private MandelMaker maker;
-	DrawingCanvas drawer;
-	private BufferedImage image;
+	private MandelPanel drawingPanel;
+	private FractalRenderer renderer;
 	
 	public Mandelbrot() {
 		
+		// Setup the main window
 		setupWindow();
-		maker = new MandelMaker(canvas);
-		image = maker.getImage();
-		canvas.setImage(maker.getImage());
-		CanvasRenderer renderer = new CanvasRenderer(this.canvas);
 		
-		Timer tmr = new Timer();
-		tmr.schedule(renderer, 1, (long)(1000.0/this.FRAMERATE));
-		canvas.beginDraw();
+		// Create the fractal renderer
+		renderer = new FractalRenderer(drawingPanel);
+		drawingPanel.setImage(renderer.getImage());
+		(new Thread(renderer)).start();
+		
+		// Create screen updater
+		(new Timer()).schedule(new CanvasUpdateTask(this.drawingPanel), 
+					 1, 
+					 (long)(1000.0/this.FRAMERATE));
 	}
 	
 	private void setupWindow() {
@@ -93,17 +94,15 @@ public class Mandelbrot extends JFrame{
 		menu.setVisible(true);
 		
 		// Configure drawing area
-		this.canvas = new DrawingCanvas(this);
-		this.canvas.setOpaque(false);
-		this.canvas.setVisible(true);
+		this.drawingPanel = new MandelPanel();
+		this.drawingPanel.setOpaque(false);
+		this.drawingPanel.setVisible(true);
 		
 		// Finalize and present
 		this.setJMenuBar(menu);
-		this.add(canvas);
+		this.add(drawingPanel);
 		this.setVisible(true);
 	}
-	
-	public MandelMaker getMaker() {return this.maker;}
 	
 	public static void main(String[] args) {
 		new Mandelbrot();

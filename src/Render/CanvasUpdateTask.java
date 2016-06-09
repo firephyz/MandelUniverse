@@ -3,11 +3,11 @@ package Render;
 import java.util.TimerTask;
 import javax.swing.JPanel;
 
-	public class CanvasRenderer extends TimerTask {
+	public class CanvasUpdateTask extends TimerTask {
 	
 	private JPanel canvas;
 	
-	public CanvasRenderer(JPanel canvas) {
+	public CanvasUpdateTask(JPanel canvas) {
 		this.canvas = canvas;
 	}
 
